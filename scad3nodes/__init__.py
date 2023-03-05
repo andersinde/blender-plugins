@@ -69,11 +69,12 @@ def get_node_index(nodes, datatype):
         idx += 1
     return 1  # by default
 
-def getColorMat(rgba):
+def getColorMat(rgba, colorMaterials = {}):
     name = str(rgba)
     # name = re.sub(r'\s', '_', name)
     # name = re.sub(r'\.', 'D', name)
     name = re.sub(r'^', 'col_', name)
+
 
     if name in colorMaterials:
         return colorMaterials[name]
@@ -129,6 +130,8 @@ def create_node(name, args, group, inputNodes):
 
     if name == 'sphere':
         fn = int(args['_ss_fn'])
+        if fn == 0: 
+            fn = 24
         radius = float(args['r'])
         sphere = group.nodes.new('GeometryNodeMeshUVSphere')
         sphere.inputs['Radius'].default_value = radius
@@ -156,6 +159,8 @@ def create_node(name, args, group, inputNodes):
         r2 = float(args['r2'])
         center = args['center']
         fn = int(args['_ss_fn'])
+        if fn == 0: 
+            fn = 24
         cylinder = group.nodes.new('GeometryNodeMeshCone')
         cylinder.inputs['Depth'].default_value = h
         cylinder.inputs['Radius Top'].default_value = r1
@@ -197,7 +202,7 @@ def create_node(name, args, group, inputNodes):
 
     elif name == 'difference':
         difference = group.nodes.new('GeometryNodeMeshBoolean')
-        if 0 < len(inputNodes):
+        if len(inputNodes) > 0:
             group.links.new(difference.inputs[0], getGeomOutput(inputNodes[0]))
         for inputNode in inputNodes[1:]:
             group.links.new(difference.inputs[1], getGeomOutput(inputNode))
@@ -290,14 +295,14 @@ def create_node(name, args, group, inputNodes):
         node = transform
 
     elif name == 'hull':
-        hull = group.nodes.new('GeometryNodeConvexHull')
-        if 1 < len(inputNodes):
+        hull = group.nodes.new('GeometryNodeConvexHull') #GeometryNodeJoinGeometry
+        if 1<len(inputNodes):
             union = group.nodes.new('GeometryNodeMeshBoolean')
             union.operation = 'UNION'
             for inputNode in inputNodes:
                 group.links.new(union.inputs[1], getGeomOutput(inputNode))
             group.links.new(hull.inputs[0], getGeomOutput(union))
-        elif 0 < len(inputNodes):
+        elif 0<len(inputNodes):
             group.links.new(hull.inputs[0], getGeomOutput(inputNodes[0]))
         node = hull
 
@@ -379,7 +384,9 @@ def main(context):
     output = load_nodes_from_file(group, filename)
 
     group.links.new(output_node.inputs[0], getGeomOutput(output))
-    bpy.ops.object.shade_smooth(use_auto_smooth=True)
+
+    bpy.ops.object.modifier_apply(modifier="GeometryNodes", report=True)
+    # bpy.ops.object.shade_smooth(use_auto_smooth=True)
 
     os.remove(filename)
 

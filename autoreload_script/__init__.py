@@ -64,6 +64,13 @@ def execute_file(fp):
     else:
         text = texts.new(tf)
 
+    if os.path.splitext(fp)[-1].lower() == ".json":
+        print("JSON")
+        print(f"cp {fp} /tmp/blender/tmp.json")
+        os.system(f"cp {fp} /tmp/blender/tmp.json")
+        bpy.ops.object.scad3nodes()
+        return
+
     text.from_string(open(fp).read())
     ctx = bpy.context.copy()
     ctx['edit_text'] = text

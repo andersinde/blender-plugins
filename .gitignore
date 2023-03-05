@@ -1,0 +1,7 @@
+*.swp
+*__pycache__*
+*.DS_Store
+*.json
+*.scad
+*.zip
+

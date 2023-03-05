@@ -1,5 +1,3 @@
-
-// stuff we need
 #include <array>
 #include <stack>
 #include <string>

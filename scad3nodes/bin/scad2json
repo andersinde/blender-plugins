@@ -1,0 +1,15 @@
+#!/bin/sh
+file=$1
+file=${file%.*}
+file=${file##*/}
+
+cp $1 /tmp/tmp.scad
+
+OpenSCAD /tmp/tmp.scad -o /tmp/tmp.csg
+parse < /tmp/tmp.csg > /tmp/blender/tmp.json
+
+cat /tmp/blender/tmp.json
+
+rm /tmp/tmp.scad /tmp/tmp.csg
+echo tmp.json > /tmp/blender/tmp.io
+

@@ -363,6 +363,8 @@ def main(context):
     print(" ------------ running scad3nodes")
     print()
  
+    # TODO: create new object instead of relying on one being selected
+
     # add geometry node modifier to selected object
     #
     obj = context.active_object
@@ -385,7 +387,9 @@ def main(context):
 
     group.links.new(output_node.inputs[0], getGeomOutput(output))
 
-    bpy.ops.object.modifier_apply(modifier="GeometryNodes", report=True)
+    # TODO: user setting
+    if False:
+        bpy.ops.object.modifier_apply(modifier="GeometryNodes", report=True)
     # bpy.ops.object.shade_smooth(use_auto_smooth=True)
 
     os.remove(filename)

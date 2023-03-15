@@ -283,10 +283,9 @@ static auto getUniqueId() {
   return ++counter;
 }
 
-// emit json representation of a tree of nodes
+// emit python representation of a tree of nodes
 static uint64_t emit(
-  const Operator *op,
-  const int isTop
+  const Operator *op
 ) {
 
   // only emit if not already done
@@ -295,12 +294,11 @@ static uint64_t emit(
     // get all children id's (and emit them if needed)
     std::vector<int> ids;
     for(const auto &c:op->children) {
-      ids.push_back(emit(c, 0));
+      ids.push_back(emit(c));
     }
 
     // emit node's specifics
     op->uniqueId = getUniqueId();
-    /*
     printf(
       "n_%06d = Node(\"%s\", args = '%s', inputNodes = [",
       (int)(op->uniqueId),
@@ -311,30 +309,7 @@ static uint64_t emit(
       printf("n_%06d, ", (int)id);
     }
     printf("], code_line=%d);\n", op->start_line);
-    */
     //printf("]);\n");
-
-    printf("  {\n");
-
-    printf("    \"id\": \"n_%06d\",\n", (int)(op->uniqueId));
-    printf("    \"name\": \"%s\",\n", &(op->name[0]));
-    printf("    \"args\": \"%s\",\n", &(op->args[0]));
-
-    printf("    \"input_nodes\": [");
-    for (int i=0; i<ids.size(); i++) {
-      if (i == ids.size()-1)
-	printf("\"n_%06d\"", (int)ids[i]);
-      else 
-	printf("\"n_%06d\", ", (int)ids[i]);
-    }
-    printf("],\n");
-
-    printf("    \"code_line\": \"%d\"\n", op->start_line);
-
-    if (isTop)
-      printf("  }\n");
-    else
-      printf("  },\n");
   }
 
   // return the node's unique id
@@ -783,9 +758,7 @@ int main() {
   top = remove_dead_code(top);
   top = concat(top);
   top = compress(map, top);
-  printf("[\n");
-  emit(top, 1);
-  printf("]");
+  printf("def%06d\n", (int)emit(top));
+  printf("output = n_%06d\n", (int)emit(top));
   return 0;
 }
-

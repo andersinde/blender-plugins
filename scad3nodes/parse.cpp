@@ -20,18 +20,18 @@
   x(InvalidAndLastParserState)  \
 
 #define x(arg) k##arg,
-  enum ParserState {
-    PARSER_STATES
-  };
+enum ParserState {
+  PARSER_STATES
+};
 #undef x
 
 static const char *getParserStateName(
-  const ParserState &parserState
-) {
+    const ParserState &parserState
+    ) {
 #define x(arg) if(k##arg==parserState) return "k" #arg;
   PARSER_STATES
 #undef x
-  return "unkndown parser state";
+    return "unkndown parser state";
 }
 
 // operator names found in CSG file, constants, names matcher
@@ -60,35 +60,35 @@ static const char *getParserStateName(
   x(no_such_type_known) \
 
 enum OpType {
-  #define x(arg) k_##arg,
-    OP_TYPE_NAMES
-  #undef x
+#define x(arg) k_##arg,
+  OP_TYPE_NAMES
+#undef x
 };
 
 static auto match(
-  const char *s0,
-  const std::vector<char> &s1
-) {
+    const char *s0,
+    const std::vector<char> &s1
+    ) {
   return 0==strcmp(s0, &(s1[0]));
 }
 
 static auto getOpType(
-  const std::vector<char> &str
-) {
-  #define x(arg) if(match(#arg, str)) return k_##arg;
-    OP_TYPE_NAMES
-  #undef x
-  printf("unknown keyword %s\n", &(str[0]));
+    const std::vector<char> &str
+    ) {
+#define x(arg) if(match(#arg, str)) return k_##arg;
+  OP_TYPE_NAMES
+#undef x
+    printf("unknown keyword %s\n", &(str[0]));
   return k_no_such_type_known;
 }
 
 // speck128_128: 128bit block, 128 bit key encryption primitive
 #define HASH_SIZE 32
 static auto speck128_128(
-  uint64_t       *out,   // (O) 128 bit result, will only get written to
-  uint64_t const *inp,   // (I) 128 bit data block
-  uint64_t const *key    // (I) 128 bit key
-)
+    uint64_t       *out,   // (O) 128 bit result, will only get written to
+    uint64_t const *inp,   // (I) 128 bit data block
+    uint64_t const *key    // (I) 128 bit key
+    )
 {
   // load arguments
   uint64_t y = inp[0];
@@ -97,10 +97,10 @@ static auto speck128_128(
   uint64_t a = key[1];
 
   // algorithm specifics
-  #define SPECK_ROUNDS 32
-  #define ROR(x, r) ((x >> r) | (x << (64 - r)))
-  #define ROL(x, r) ((x << r) | (x >> (64 - r)))
-  #define R(x, y, k) (x = ROR(x, 8), x += y, x ^= k, y = ROL(y, 3), y ^= x)
+#define SPECK_ROUNDS 32
+#define ROR(x, r) ((x >> r) | (x << (64 - r)))
+#define ROL(x, r) ((x << r) | (x >> (64 - r)))
+#define R(x, y, k) (x = ROR(x, 8), x += y, x ^= k, y = ROL(y, 3), y ^= x)
 
   // apply speck rounds to input using key
   R(x, y, b);
@@ -116,10 +116,10 @@ static auto speck128_128(
 
 // speck-based collision-resistant 256-bit hash
 static auto speck_and_add(
-  uint8_t hash[HASH_SIZE], // (I/O) hash, 256 bits==32 bytes
-  const uint8_t *input,    // (I) data to hash
-  const size_t &size       // (I) data size
-) {
+    uint8_t hash[HASH_SIZE], // (I/O) hash, 256 bits==32 bytes
+    const uint8_t *input,    // (I) data to hash
+    const size_t &size       // (I) data size
+    ) {
 
   // two random initial encryption keys
   uint8_t keys[] = {
@@ -166,8 +166,8 @@ static auto speck_and_add(
 
 // print out 256 bit hex hash (debug)
 static auto hexHash(
-  const std::array<uint8_t, HASH_SIZE> &hash
-) {
+    const std::array<uint8_t, HASH_SIZE> &hash
+    ) {
   std::string r;
   for(const auto &c:hash) {
     char buf[8];
@@ -200,14 +200,14 @@ struct Operator {
 
       // lambda to add a string to the hash
       auto hash_and_add = [&](
-        std::array<uint8_t, HASH_SIZE> &hash,
-        const std::vector<char> &buffer
-      ) {
-          speck_and_add(
-            (uint8_t*)&(hash[0]),
-            (uint8_t*)&(buffer[0]),
-            buffer.size()
-          );
+	  std::array<uint8_t, HASH_SIZE> &hash,
+	  const std::vector<char> &buffer
+	  ) {
+	speck_and_add(
+	    (uint8_t*)&(hash[0]),
+	    (uint8_t*)&(buffer[0]),
+	    buffer.size()
+	    );
       };
 
       // hash initial value
@@ -218,12 +218,12 @@ struct Operator {
       hash_and_add(hash, name);
       hash_and_add(hash, args);
       for(const auto &child:children) {
-        const auto &childHash = child->getHash();
-        speck_and_add(
-          (uint8_t*)&(hash[0]),
-          (uint8_t*)&(childHash[0]),
-          childHash.size()
-        );
+	const auto &childHash = child->getHash();
+	speck_and_add(
+	    (uint8_t*)&(hash[0]),
+	    (uint8_t*)&(childHash[0]),
+	    childHash.size()
+	    );
       }
     }
 
@@ -232,17 +232,17 @@ struct Operator {
   }
 
   Operator(
-    const std::vector<char> &_name,
-    const std::vector<char> &_args,
-    const uint8_t _tree_marker,
-    const int _start_line
-  ) : name(_name),
-      args(_args),
-      ref_count(1),
-      uniqueId(0ULL),
-      hash_ready(false),
-      tree_marker(_tree_marker),
-      start_line(_start_line)
+      const std::vector<char> &_name,
+      const std::vector<char> &_args,
+      const uint8_t _tree_marker,
+      const int _start_line
+      ) : name(_name),
+  args(_args),
+  ref_count(1),
+  uniqueId(0ULL),
+  hash_ready(false),
+  tree_marker(_tree_marker),
+  start_line(_start_line)
   {
     type = getOpType(name);
   }
@@ -250,8 +250,8 @@ struct Operator {
 
 // print start of line indentation at level "depth"
 static auto indentPrint(
-  int depth
-) {
+    int depth
+    ) {
   while(depth--) {
     putchar(' ');
     putchar(' ');
@@ -260,16 +260,16 @@ static auto indentPrint(
 
 // print out tree as parsed (debug)
 static void show(
-  const Operator *op,
-  int depth = 0
-) {
+    const Operator *op,
+    int depth = 0
+    ) {
   indentPrint(depth);
   printf(
-    "%s(%s) { // %p\n",
-    &(op->name[0]),
-    &(op->args[0]),
-    op
-  );
+      "%s(%s) { // %p\n",
+      &(op->name[0]),
+      &(op->args[0]),
+      op
+      );
   for(const auto &c:op->children) {
     show(c, 1+depth);
   }
@@ -285,8 +285,8 @@ static auto getUniqueId() {
 
 // emit python representation of a tree of nodes
 static uint64_t emit(
-  const Operator *op
-) {
+    const Operator *op
+    ) {
 
   // only emit if not already done
   if(0==op->uniqueId) {
@@ -300,11 +300,11 @@ static uint64_t emit(
     // emit node's specifics
     op->uniqueId = getUniqueId();
     printf(
-      "n_%06d = Node(\"%s\", args = '%s', inputNodes = [",
-      (int)(op->uniqueId),
-      &(op->name[0]),
-      &(op->args[0])
-    );
+	"\tn_%06d = Node(\"%s\", args = '%s', group = group, inputNodes = [",
+	(int)(op->uniqueId),
+	&(op->name[0]),
+	&(op->args[0])
+	);
     for(auto &id:ids) {
       printf("n_%06d, ", (int)id);
     }
@@ -317,9 +317,7 @@ static uint64_t emit(
 }
 
 // simplify a tree by removing dead code
-static Operator *remove_dead_code(
-  Operator *op
-) {
+static Operator *remove_dead_code(Operator *op) {
 
   // for all children
   size_t i = 0;
@@ -340,20 +338,20 @@ static Operator *remove_dead_code(
   // see if node itself is dead
   auto t = op->type;
   auto dead = (
-    (0==op->children.size()) && (
-      (k_linear_extrude == t)||
-      (k_intersection == t)  ||
-      (k_difference == t)    ||
-      (k_multmatrix == t)    ||
-      (k_minkowski == t)     ||
-      (k_color == t)         ||
-      (k_offset == t)        ||
-      (k_render == t)        ||
-      (k_group == t)         ||
-      (k_union == t)         ||
-      (k_hull == t)
-    )
-  );
+      (0==op->children.size()) && (
+	(k_linear_extrude == t)||
+	(k_intersection == t)  ||
+	(k_difference == t)    ||
+	(k_multmatrix == t)    ||
+	(k_minkowski == t)     ||
+	(k_color == t)         ||
+	(k_offset == t)        ||
+	(k_render == t)        ||
+	(k_group == t)         ||
+	(k_union == t)         ||
+	(k_hull == t)
+	)
+      );
 
   // yes, kill it and return 0
   if(dead) {
@@ -363,15 +361,15 @@ static Operator *remove_dead_code(
 
   // see if node is a NOP
   auto nop = (
-    (1==op->children.size()) && (
-      (k_intersection == t)  ||
-      (k_difference == t)    ||
-      (k_minkowski == t)     ||
-      (k_render == t)        ||
-      (k_group == t)         ||
-      (k_union == t)
-    )
-  );
+      (1==op->children.size()) && (
+	(k_intersection == t)  ||
+	(k_difference == t)    ||
+	(k_minkowski == t)     ||
+	(k_render == t)        ||
+	(k_group == t)         ||
+	(k_union == t)
+	)
+      );
 
   // yes, replace it by its unique child
   if(nop) {
@@ -387,24 +385,24 @@ using Value = Operator *;
 using Key = const std::array<uint8_t, HASH_SIZE>;
 using Hash = struct {
   auto operator()(
-    const Key &key
-  ) const {
+      const Key &key
+      ) const {
     std::hash<std::string> hasher;
     return hasher(
-      std::string(
-        (const char *)&(key[0]),
-        key.size()
-      )
-    );
+	std::string(
+	  (const char *)&(key[0]),
+	  key.size()
+	  )
+	);
   }
 };
 using Map = std::unordered_map<Key, Value, Hash>;
 
 // try to replace identical subtrees
 Operator *compress(
-  Map &map,
-  Operator *node
-) {
+    Map &map,
+    Operator *node
+    ) {
 
   // compress children
   for(auto &c:node->children) {
@@ -416,12 +414,12 @@ Operator *compress(
   auto it = map.find(hash);
   if(map.end()==it) {
     map[hash] = node;
-//printf("node %s is original\n", &(node->name[0]));
+    //printf("node %s is original\n", &(node->name[0]));
   } else {
-//printf("node %s is a dupe of %s\n", &(node->name[0]), &(it->second->name[0]));
-//printf("DUPE:\n"); show(node);
-//printf("ORIG (refcount=%d):\n", (int)it->second->ref_count);
-//show(it->second);
+    //printf("node %s is a dupe of %s\n", &(node->name[0]), &(it->second->name[0]));
+    //printf("DUPE:\n"); show(node);
+    //printf("ORIG (refcount=%d):\n", (int)it->second->ref_count);
+    //show(it->second);
     ++(it->second->ref_count);
     node = it->second;
   }
@@ -445,26 +443,26 @@ struct Mat4 {
 
   // accessor
   double *operator[](
-    size_t i
-  ) {
+      size_t i
+      ) {
     return &(m[i][0]);
   }
 
   // post-multiply by a matrix in a multmatrix argument string
   void postMul(
-    const std::vector<char> &args
-  ) {
+      const std::vector<char> &args
+      ) {
 
     // parse multmatrix args
     double n[4][4];
     auto nbRead = sscanf(
-      &(args[0]),
-      "[[%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf]]",
-      &(n[0][0]), &(n[0][1]), &(n[0][2]), &(n[0][3]),
-      &(n[1][0]), &(n[1][1]), &(n[1][2]), &(n[1][3]),
-      &(n[2][0]), &(n[2][1]), &(n[2][2]), &(n[2][3]),
-      &(n[3][0]), &(n[3][1]), &(n[3][2]), &(n[3][3])
-    );
+	&(args[0]),
+	"[[%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf], [%lf, %lf, %lf, %lf]]",
+	&(n[0][0]), &(n[0][1]), &(n[0][2]), &(n[0][3]),
+	&(n[1][0]), &(n[1][1]), &(n[1][2]), &(n[1][3]),
+	&(n[2][0]), &(n[2][1]), &(n[2][2]), &(n[2][3]),
+	&(n[3][0]), &(n[3][1]), &(n[3][2]), &(n[3][3])
+	);
     if(16 != nbRead) {
       abort();
     }
@@ -474,9 +472,9 @@ struct Mat4 {
     memset(r, 0, sizeof(r));
     for(int j=0; j<4; ++j) {
       for(int i=0; i<4; ++i) {
-        for(int k=0; k<4; ++k) {
-          r[i][j] += (m[i][k] * n[k][j]);
-        }
+	for(int k=0; k<4; ++k) {
+	  r[i][j] += (m[i][k] * n[k][j]);
+	}
       }
     }
     memcpy(m, r, sizeof(r));
@@ -486,17 +484,17 @@ struct Mat4 {
 
 // concatenate matrices in sub-tree
 Operator *concat(
-  Operator *op
-) {
+    Operator *op
+    ) {
 
   // roll up all children that are strings of matrices
   Mat4 mat;
   auto c = op;
   int count = 0;
   while(
-    (1==c->children.size()) &&
-    (k_multmatrix == c->type)
-  ) {
+      (1==c->children.size()) &&
+      (k_multmatrix == c->type)
+      ) {
     mat.postMul(c->args);
     c = c->children[0];
     ++count;
@@ -508,13 +506,13 @@ Operator *concat(
 
     char buf[1024];
     sprintf(
-      buf,
-      "[[%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f]]",
-      mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-      mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-      mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-      mat[3][0], mat[3][1], mat[3][2], mat[3][3]
-    );
+	buf,
+	"[[%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f], [%f, %f, %f, %f]]",
+	mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+	mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+	mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+	mat[3][0], mat[3][1], mat[3][2], mat[3][3]
+	);
 
     size_t n = strlen(buf);
     op->args.resize(1 + n);
@@ -543,22 +541,22 @@ static auto parseSTDIN() {
   std::stack<Operator *> stack;
 
   // parser error handler
-  #define ERROR(msg) error(msg, __LINE__)
+#define ERROR(msg) error(msg, __LINE__)
   auto error = [&](
-    const char *msg,
-    int parserLine
-  ) {
+      const char *msg,
+      int parserLine
+      ) {
 
     // print error message
     printf(
-      "\n"
-      "error at lineNo=%d, charNo=%d, parserLine=%d, parserState=%d (%s)\n",
-      lineNumber,
-      (int)currLine.size(),
-      (int)parserLine,
-      (int)parserState,
-      getParserStateName(parserState)
-    );
+	"\n"
+	"error at lineNo=%d, charNo=%d, parserLine=%d, parserState=%d (%s)\n",
+	lineNumber,
+	(int)currLine.size(),
+	(int)parserLine,
+	(int)parserState,
+	getParserStateName(parserState)
+	);
 
     // show where error message occured
     currLine.push_back(0);
@@ -587,18 +585,18 @@ static auto parseSTDIN() {
 
   // DFA main code
   auto processChar = [&](
-    int c
-  ) {
+      int c
+      ) {
 
     // save original char (debug)
     // auto original_char = c;
 
     // simplify DFA by replacing space-like things by a space
     if(
-      ('\t' == c) ||
-      ('\r' == c) ||
-      ('\f' == c)
-    ) {
+	('\t' == c) ||
+	('\r' == c) ||
+	('\f' == c)
+      ) {
       c = ' ';
     }
 
@@ -617,112 +615,112 @@ static auto parseSTDIN() {
     // deterministic finite automaton parser, each switch case is a state
     switch(parserState) {
       case kWaitingForOp:
-        if (
-          ('A'<=c && c<='Z')  ||
-          ('a'<=c && c<='z')  ||
-          ('_'==c)
-        ) {
-          opName.clear();
-          opName.push_back(c);
-          parserState = kInOpName;
-        } else if (' '==c) {
-          parserState = kWaitingForOp;
-        } else if (
-          ('!'==c) ||
-          ('%'==c) ||
-          ('#'==c)
-        ) {
-          tree_marker = c;
-          parserState = kWaitingForOp;
-        } else {
-          ERROR("expected: [_a-zA-Z\\s!%#]");
-        }
-        break;
+	if (
+	    ('A'<=c && c<='Z')  ||
+	    ('a'<=c && c<='z')  ||
+	    ('_'==c)
+	   ) {
+	  opName.clear();
+	  opName.push_back(c);
+	  parserState = kInOpName;
+	} else if (' '==c) {
+	  parserState = kWaitingForOp;
+	} else if (
+	    ('!'==c) ||
+	    ('%'==c) ||
+	    ('#'==c)
+	    ) {
+	  tree_marker = c;
+	  parserState = kWaitingForOp;
+	} else {
+	  ERROR("expected: [_a-zA-Z\\s!%#]");
+	}
+	break;
       case kInOpName:
-        if (
-          ('0'<=c && c<='9')  ||
-          ('A'<=c && c<='Z')  ||
-          ('a'<=c && c<='z')  ||
-          ('_'==c)
-        ) {
-          opName.push_back(c);
-        } else if ('('==c) {
-          opArgs.clear();
-          opName.push_back(0);
-          parserState = kInOpArgs;
-        } else if (' '==c) {
-          opName.push_back(0);
-          parserState = kWaitingForOpArgs;
-        } else {
-          ERROR("expected: [(_0-9a-zA-Z\\s]");
-        }
-        break;
+	if (
+	    ('0'<=c && c<='9')  ||
+	    ('A'<=c && c<='Z')  ||
+	    ('a'<=c && c<='z')  ||
+	    ('_'==c)
+	   ) {
+	  opName.push_back(c);
+	} else if ('('==c) {
+	  opArgs.clear();
+	  opName.push_back(0);
+	  parserState = kInOpArgs;
+	} else if (' '==c) {
+	  opName.push_back(0);
+	  parserState = kWaitingForOpArgs;
+	} else {
+	  ERROR("expected: [(_0-9a-zA-Z\\s]");
+	}
+	break;
       case kWaitingForOpArgs:
-        if ('('==c) {
-          opArgs.clear();
-          parserState = kInOpArgs;
-        } else if (' '==c) {
-          parserState = kWaitingForOpArgs;
-        } else {
-          ERROR("expected: [(\\s]");
-        }
-        break;
+	if ('('==c) {
+	  opArgs.clear();
+	  parserState = kInOpArgs;
+	} else if (' '==c) {
+	  parserState = kWaitingForOpArgs;
+	} else {
+	  ERROR("expected: [(\\s]");
+	}
+	break;
       case kInOpArgs:
-        if (')'==c) {   // TODO: account for parens in strings and parens nesting
+	if (')'==c) {   // TODO: account for parens in strings and parens nesting
 
-          opArgs.push_back(0);
-          parserState = kWaitingForOpBodyOrOpEnd;
+	  opArgs.push_back(0);
+	  parserState = kWaitingForOpBodyOrOpEnd;
 
-          auto newOp = new Operator(opName, opArgs, tree_marker, lineNumber);
-          tree_marker = 0;
+	  auto newOp = new Operator(opName, opArgs, tree_marker, lineNumber);
+	  tree_marker = 0;
 
-          if(stack.empty()) {
-            if(0!=top) {
-              ERROR("stack empty but top is not NULL!");
-              abort();
-            }
-            top = newOp;
-          } else {
-            stack.top()->children.push_back(newOp);
-          }
-          stack.push(newOp);
+	  if(stack.empty()) {
+	    if(0!=top) {
+	      ERROR("stack empty but top is not NULL!");
+	      abort();
+	    }
+	    top = newOp;
+	  } else {
+	    stack.top()->children.push_back(newOp);
+	  }
+	  stack.push(newOp);
 
-        } else {
-          opArgs.push_back(char(c));
-        }
-        break;
+	} else {
+	  opArgs.push_back(char(c));
+	}
+	break;
       case kWaitingForOpBodyOrOpEnd:
-        if (' '==c) {
-          parserState = kWaitingForOpBodyOrOpEnd;
-        } else if (';'==c) {
-          parserState = kAfterOpEnd;
-          stack.pop();
-        } else if ('{'==c) {
-          parserState = kWaitingForOp;
-        } else {
-          ERROR("unexpected");
-        }
-        break;
+	if (' '==c) {
+	  parserState = kWaitingForOpBodyOrOpEnd;
+	} else if (';'==c) {
+	  parserState = kAfterOpEnd;
+	  stack.pop();
+	} else if ('{'==c) {
+	  parserState = kWaitingForOp;
+	} else {
+	  ERROR("unexpected");
+	}
+	break;
       case kAfterOpEnd:
-        if (
-          ('A'<=c && c<='Z')  ||
-          ('a'<=c && c<='z')  ||
-          ('_'==c)
-        ) {
-          opName.clear();
-          parserState = kInOpName;
-          opName.push_back(c);
-        } else if (' '==c) {
-          parserState = kAfterOpEnd;
-        } else if ('}'==c) {
-          parserState = kAfterOpEnd;
-          stack.pop();
-        } else {
-          ERROR("unexpected");
-        }
-        break;
+	if (
+	    ('A'<=c && c<='Z')  ||
+	    ('a'<=c && c<='z')  ||
+	    ('_'==c)
+	   ) {
+	  opName.clear();
+	  parserState = kInOpName;
+	  opName.push_back(c);
+	} else if (' '==c) {
+	  parserState = kAfterOpEnd;
+	} else if ('}'==c) {
+	  parserState = kAfterOpEnd;
+	  stack.pop();
+	} else {
+	  ERROR("unexpected");
+	}
+	break;
       case kInvalidAndLastParserState:
-        abort();
+	abort();
     }
   };
 
@@ -758,7 +756,7 @@ int main() {
   top = remove_dead_code(top);
   top = concat(top);
   top = compress(map, top);
-  printf("def%06d\n", (int)emit(top));
-  printf("output = n_%06d\n", (int)emit(top));
+  printf("def get_output_node(group, Node):\n");
+  printf("\treturn n_%06d\n", (int)emit(top));
   return 0;
 }

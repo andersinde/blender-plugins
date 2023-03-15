@@ -10,8 +10,9 @@ import os
 import sys
 import math
 import mathutils
-import json
-
+import sys
+import importlib
+import time
 
 # add a polygon
 # -------------
@@ -124,7 +125,7 @@ def getGeomOutput(node):
 
 # convert a SCAD operator to Blender geometry node
 # ------------------------------------------------
-def create_node(name, args, group, inputNodes):
+def Node(name, args, group, inputNodes, code_line):
     node = None
     args = parseArgs(args)
 
@@ -328,27 +329,27 @@ def create_node(name, args, group, inputNodes):
     return node
 
 
-def load_nodes_from_file(group, filename):
-    try:
-        f = open(filename, 'rb')
-    except OSError:
-        print("Could not open/read file:", filename)
-        return
+# def load_nodes_from_file(group, filename):
+#     try:
+#         f = open(filename, 'rb')
+#     except OSError:
+#         print("Could not open/read file:", filename)
+#         return
 
-    f = open(filename)
-    nodes_json = json.load(f)
-    nodes = {}
+#     f = open(filename)
+#     nodes_json = json.load(f)
+#     nodes = {}
 
-    for node_json in nodes_json:
-        input_nodes = []
-        for input_node_id in node_json["input_nodes"]:
-            input_nodes.append(nodes[input_node_id])
+#     for node_json in nodes_json:
+#         input_nodes = []
+#         for input_node_id in node_json["input_nodes"]:
+#             input_nodes.append(nodes[input_node_id])
 
-        id, name, args, code_line = node_json["id"], node_json["name"], node_json["args"], node_json["code_line"]
-        nodes[id] = create_node(name, args, group, input_nodes)
-        # nodes[id]    = [name, args, input_nodes, code_line]
+#         id, name, args, code_line = node_json["id"], node_json["name"], node_json["args"], node_json["code_line"]
+#         nodes[id] = create_node(name, args, group, input_nodes)
+#         # nodes[id]    = [name, args, input_nodes, code_line]
 
-    return nodes[id]
+#     return nodes[id]
 
 
 
@@ -361,6 +362,9 @@ def load_nodes_from_file(group, filename):
 def main(context):
     print()
     print(" ------------ running scad3nodes")
+    start_timer = time.time()
+
+
     print()
  
     # TODO: create new object instead of relying on one being selected
@@ -381,9 +385,13 @@ def main(context):
     output_node.select = False
     mod.node_group = group
   
-    # filename = "/Users/andersinde/Desktop/scad2nodes/sp2.json"
-    filename = "/tmp/blender/tmp.json"
-    output = load_nodes_from_file(group, filename)
+    # load output
+    sys.path.append("/tmp")
+    import nodes
+    importlib.reload(nodes)
+    from nodes import get_output_node
+
+    output = get_output_node(group, Node)
 
     group.links.new(output_node.inputs[0], getGeomOutput(output))
 
@@ -392,16 +400,16 @@ def main(context):
         bpy.ops.object.modifier_apply(modifier="GeometryNodes", report=True)
     # bpy.ops.object.shade_smooth(use_auto_smooth=True)
 
-    os.remove(filename)
-
     print()
+    end_timer = time.time()
+    print("timer:",  end_timer - start_timer)
     print(" ------------")
     print()
 
 
 
 class Scad3NodesOperator(bpy.types.Operator):
-    """Converts json (parsed .csg file) to geomtry node modifier"""
+    """Converts py (parsed .csg file) to geomtry node modifier"""
     bl_idname = "object.scad3nodes"
     bl_label = "scad3nodes"
 

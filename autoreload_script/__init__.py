@@ -22,7 +22,7 @@ log.setLevel(logging.INFO)
 STOPPED = 2
 RUNNING = 3
 
-TEMP_FILE = "/tmp/blender/tmp.io"
+TEMP_FILE = "/tmp/blender_tmp.io"
 statemachine = {
     'status': STOPPED,
 }
@@ -68,6 +68,11 @@ def execute_file(fp):
         print("JSON")
         print(f"cp {fp} /tmp/blender/tmp.json")
         os.system(f"cp {fp} /tmp/blender/tmp.json")
+        bpy.ops.object.scad3nodes()
+        return
+
+    if os.path.splitext(fp)[-1].lower() == ".py":
+        # print("NODES overtake")
         bpy.ops.object.scad3nodes()
         return
 
@@ -121,7 +126,7 @@ class BPY_OT_external_editor_client(Operator):
             log.info("Entering modal operator...")
             statemachine['status'] = RUNNING
             wm = context.window_manager
-            #self._timer = wm.event_timer_add(self.speed, context.window)
+            # self._timer = wm.event_timer_add(self.speed, context.window)
             self._timer = wm.event_timer_add(self.speed, window=context.window)
             wm.modal_handler_add(self)
 
@@ -163,7 +168,7 @@ class BPY_PT_external_editor_panel(Panel):
         if tstr:
             op = col.operator('wm.bpy_autoreload_script', text=tstr)
             op.mode = tstr
-            op.speed = 1
+            op.speed = 0.4
 
 
 def menu_func(self, context):
@@ -181,5 +186,8 @@ def unregister():
 
 if __name__ == '__main__':
     register()
-    bpy.ops.wm.bpy_autoreload_script(speed=1, mode="start")
+    bpy.ops.wm.bpy_autoreload_script(speed=0.4, mode="start")
+    # speed = time_step (float in [0, inf]) – Time Step, Interval in seconds between timer events
+
+
 

@@ -305,10 +305,11 @@ static uint64_t emit(
 	&(op->name[0]),
 	&(op->args[0])
 	);
-    for(auto &id:ids) {
+
+    for(auto &id:ids)
       printf("n_%06d, ", (int)id);
-    }
-    printf("], code_line=%d);\n", op->start_line);
+
+    printf("], code_line=%d)\n", op->start_line);
     //printf("]);\n");
   }
 

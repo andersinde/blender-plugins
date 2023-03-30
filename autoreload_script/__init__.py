@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Autoreload script",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (3, 4, 0),
 }
 
@@ -8,12 +8,20 @@ import bpy
 import sys
 import os
 import logging
-from bpy.props import StringProperty, FloatProperty
-from bpy.types import Operator, Panel
+from bpy.types import Panel, Menu, Operator, PropertyGroup
+from bpy.props import (StringProperty,
+                       BoolProperty,
+                       IntProperty,
+                       FloatProperty,
+                       FloatVectorProperty,
+                       EnumProperty,
+                       PointerProperty,
+                       )
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)-15s %(levelname)8s %(name)s %(message)s"
+    level=logging.DEBUG,
+    # format="%(asctime)-15s %(levelname)8s %(name)s %(message)s"
+    format="%(levelname)s %(name)s %(message)s"
 )
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -64,15 +72,8 @@ def execute_file(fp):
     else:
         text = texts.new(tf)
 
-    if os.path.splitext(fp)[-1].lower() == ".json":
-        print("JSON")
-        print(f"cp {fp} /tmp/blender/tmp.json")
-        os.system(f"cp {fp} /tmp/blender/tmp.json")
-        bpy.ops.object.scad3nodes()
-        return
-
-    if os.path.splitext(fp)[-1].lower() == ".py":
-        # print("NODES overtake")
+    my_props = bpy.context.object.my_props
+    if my_props.scad_prop:
         bpy.ops.object.scad3nodes()
         return
 
@@ -91,7 +92,6 @@ def execute_file(fp):
 
 
 class BPY_OT_external_editor_client(Operator):
-
     bl_idname = "wm.bpy_autoreload_script"
     bl_label = "Autoreload external script"
 
@@ -126,7 +126,6 @@ class BPY_OT_external_editor_client(Operator):
             log.info("Entering modal operator...")
             statemachine['status'] = RUNNING
             wm = context.window_manager
-            # self._timer = wm.event_timer_add(self.speed, context.window)
             self._timer = wm.event_timer_add(self.speed, window=context.window)
             wm.modal_handler_add(self)
 
@@ -142,9 +141,24 @@ class BPY_OT_external_editor_client(Operator):
         wm = context.window_manager
         wm.event_timer_remove(self._timer)
 
+class MyProperties(PropertyGroup):
+
+    scad_prop: BoolProperty(
+            name="SCAD",
+            description="Treat script as scad code",
+            default = True
+            )
+
+    poll_speed_prop: IntProperty(
+            name = "Poll speed ms",
+            description="A integer property",
+            default = 500,
+            min = 10,
+            max = 1000
+            )
+
 
 class BPY_PT_external_editor_panel(Panel):
-
     bl_idname = "BPY_PT_ext"
     bl_label = "Autoreload script"
     bl_space_type = 'VIEW_3D'
@@ -157,7 +171,6 @@ class BPY_PT_external_editor_panel(Panel):
 
         state = statemachine['status']
 
-        # promising! continue
         tstr = ''
         if state == STOPPED:
             tstr = 'start'
@@ -165,10 +178,17 @@ class BPY_PT_external_editor_panel(Panel):
             col.label(text='Listening: \n' + TEMP_FILE)
             tstr = 'end'
 
-        if tstr:
-            op = col.operator('wm.bpy_autoreload_script', text=tstr)
-            op.mode = tstr
-            op.speed = 0.4
+        my_props = context.object.my_props
+
+        op = col.operator('wm.bpy_autoreload_script', text=tstr)
+        op.mode = tstr
+        op.speed = 0.5 #my_props.poll_speed_prop/1000
+
+        # row = layout.row()
+        # row.prop(my_props, "poll_speed_prop")
+
+        row = layout.row()
+        row.prop(my_props, "scad_prop")
 
 
 def menu_func(self, context):
@@ -177,7 +197,10 @@ def menu_func(self, context):
 def register():
     bpy.utils.register_class(BPY_PT_external_editor_panel)
     bpy.utils.register_class(BPY_OT_external_editor_client)
+    bpy.utils.register_class(MyProperties)
+
     bpy.types.VIEW3D_MT_object.append(menu_func)
+    bpy.types.Object.my_props = PointerProperty(type=MyProperties)
 
 def unregister():
     bpy.utils.unregister_class(BPY_PT_external_editor_panel)

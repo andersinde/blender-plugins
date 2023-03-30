@@ -1,6 +1,6 @@
 bl_info = {
     "name": "scad3nodes",
-    "version": (0, 1),
+    "version": (0, 2),
     "blender": (3, 4, 0),
 }
 
@@ -209,12 +209,18 @@ def Node(name, args, group, inputNodes, code_line):
             group.links.new(difference.inputs[1], getGeomOutput(inputNode))
         node = difference
 
-    elif name == 'union' or name == 'group':
+    elif name == 'union':
         union = group.nodes.new('GeometryNodeMeshBoolean')
         union.operation = 'UNION'
         for inputNode in inputNodes:
             group.links.new(union.inputs[1], getGeomOutput(inputNode))
         node = union
+
+    elif name == 'group':
+        join = group.nodes.new('GeometryNodeJoinGeometry')
+        for inputNode in inputNodes:
+            group.links.new(join.inputs[0], getGeomOutput(inputNode))
+        node = join
 
     elif name == 'intersection':
         intersection = group.nodes.new('GeometryNodeMeshBoolean')

@@ -1,6 +1,6 @@
 bl_info = {
     "name": "scad3nodes",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (3, 4, 0),
 }
 
@@ -194,7 +194,7 @@ def Node(name, args, group, inputNodes, code_line):
             group.links.new(transform.inputs[0], getGeomOutput(inputNodes[0]))
         node = transform
 
-    elif name == 'color':  #: TODO: this doesn't surve boolean ops
+    elif name == 'color':
         color = group.nodes.new('GeometryNodeSetMaterial')
         color.inputs['Material'].default_value = getColorMat(args['arg_0'])
         if 0 < len(inputNodes):
@@ -220,6 +220,7 @@ def Node(name, args, group, inputNodes, code_line):
         join = group.nodes.new('GeometryNodeJoinGeometry')
         for inputNode in inputNodes:
             group.links.new(join.inputs[0], getGeomOutput(inputNode))
+            # create_new_object(inputNode(0))
         node = join
 
     elif name == 'intersection':
@@ -335,60 +336,22 @@ def Node(name, args, group, inputNodes, code_line):
     return node
 
 
-# def load_nodes_from_file(group, filename):
-#     try:
-#         f = open(filename, 'rb')
-#     except OSError:
-#         print("Could not open/read file:", filename)
-#         return
-
-#     f = open(filename)
-#     nodes_json = json.load(f)
-#     nodes = {}
-
-#     for node_json in nodes_json:
-#         input_nodes = []
-#         for input_node_id in node_json["input_nodes"]:
-#             input_nodes.append(nodes[input_node_id])
-
-#         id, name, args, code_line = node_json["id"], node_json["name"], node_json["args"], node_json["code_line"]
-#         nodes[id] = create_node(name, args, group, input_nodes)
-#         # nodes[id]    = [name, args, input_nodes, code_line]
-
-#     return nodes[id]
-
-
-
-
-#########################################################################
-
-
-
-
 def main(context):
-    print()
-    print(" ------------ running scad3nodes")
+    print("\n  ------------ running scad3nodes\n")
     start_timer = time.time()
 
-
-    print()
- 
-    # TODO: create new object instead of relying on one being selected
-
-    # add geometry node modifier to selected object
-    #
-    obj = context.active_object
-    mod = obj.modifiers.new("GeometryNodes", 'NODES')
-
-    print("selected object: ", obj)
-
     # create new geometry node group with no input node and one output node
-    #
     group = bpy.data.node_groups.new("Geometry Nodes", 'GeometryNodeTree')
     group.outputs.new('NodeSocketGeometry', "Geometry")
     output_node = group.nodes.new('NodeGroupOutput')
     output_node.is_active_output = True
     output_node.select = False
+
+    # add geometry node modifier to object
+    obj = context.active_object
+    # mesh = bpy.data.meshes.new("mesh")
+    # obj = bpy.data.objects.new(mesh.name, mesh)
+    mod = obj.modifiers.new("GeometryNodes", 'NODES')
     mod.node_group = group
   
     # load output
@@ -402,8 +365,8 @@ def main(context):
     group.links.new(output_node.inputs[0], getGeomOutput(output))
 
     # TODO: user setting
-    if False:
-        bpy.ops.object.modifier_apply(modifier="GeometryNodes", report=True)
+    if True:
+        obj.modifier_apply(modifier="GeometryNodes", report=True)
     # bpy.ops.object.shade_smooth(use_auto_smooth=True)
 
     print()

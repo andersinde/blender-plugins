@@ -1,6 +1,6 @@
 bl_info = {
     "name": "Autoreload script",
-    "version": (0, 2),
+    "version": (0, 3),
     "blender": (3, 4, 0),
 }
 

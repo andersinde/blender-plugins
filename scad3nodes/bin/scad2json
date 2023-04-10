@@ -10,7 +10,7 @@ OpenSCAD /tmp/tmp.scad -o /tmp/tmp.csg
 # cat /tmp/tmp.csg
 
 parse < /tmp/tmp.csg > /tmp/nodes.py
-touch /tmp/${file}.name
+touch ${file}.name
  
 # cat /tmp/nodes.py
 

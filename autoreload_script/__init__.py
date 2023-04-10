@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Autoreload script",
-    "version": (0, 3),
-    "blender": (3, 4, 0),
+    "version": (0, 4),
+    "blender": (3, 5, 0),
 }
 
 import bpy
@@ -72,7 +72,7 @@ def execute_file(fp):
     else:
         text = texts.new(tf)
 
-    my_props = bpy.context.object.my_props
+    my_props = bpy.context.scene.my_props
     if my_props.scad_prop:
         bpy.ops.object.scad3nodes()
         return
@@ -178,7 +178,7 @@ class BPY_PT_external_editor_panel(Panel):
             col.label(text='Listening: \n' + TEMP_FILE)
             tstr = 'end'
 
-        my_props = context.object.my_props
+        my_props = context.scene.my_props
 
         op = col.operator('wm.bpy_autoreload_script', text=tstr)
         op.mode = tstr
@@ -200,7 +200,7 @@ def register():
     bpy.utils.register_class(MyProperties)
 
     bpy.types.VIEW3D_MT_object.append(menu_func)
-    bpy.types.Object.my_props = PointerProperty(type=MyProperties)
+    bpy.types.Scene.my_props = PointerProperty(type=MyProperties)
 
 def unregister():
     bpy.utils.unregister_class(BPY_PT_external_editor_panel)
@@ -211,6 +211,4 @@ if __name__ == '__main__':
     register()
     bpy.ops.wm.bpy_autoreload_script(speed=0.4, mode="start")
     # speed = time_step (float in [0, inf]) – Time Step, Interval in seconds between timer events
-
-
 

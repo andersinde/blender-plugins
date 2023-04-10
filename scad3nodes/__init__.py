@@ -1,7 +1,8 @@
-bl_info = {
+ bl_info = {
     "name": "scad3nodes",
-    "version": (0, 3),
-    "blender": (3, 4, 0),
+    "author": "Anders Inde",
+    "version": (0, 4),
+    "blender": (3, 5, 0),
 }
 
 import bpy
@@ -14,8 +15,6 @@ import sys
 import importlib
 import time
 
-# add a polygon
-# -------------
 def make_polygon(vertices):
     vertices = [[float(v[0]), float(v[1]), 0.0] for v in vertices]
 
@@ -37,8 +36,6 @@ def make_polygon(vertices):
     obj.hide_set(True)
     return obj
 
-# add a polyhderon
-# -------------
 def make_polyhedron(vertices, faces):
     vertices = [[float(v[0]), float(v[1]), float(v[2])] for v in vertices]
     faces = [[int(i) for i in f] for f in faces]
@@ -61,7 +58,6 @@ def make_polyhedron(vertices, faces):
     return obj
 
 # search for a node by type in a tree
-# -----------------------------------
 def get_node_index(nodes, datatype):
     idx = 0
     for m in nodes:
@@ -124,7 +120,6 @@ def getGeomOutput(node):
 
 
 # convert a SCAD operator to Blender geometry node
-# ------------------------------------------------
 def Node(name, args, group, inputNodes, code_line):
     node = None
     args = parseArgs(args)
@@ -340,6 +335,18 @@ def main(context):
     print("\n  ------------ running scad3nodes\n")
     start_timer = time.time()
 
+    # create new object geometry node modifier to object
+    mesh = bpy.data.meshes.new("SCAD mesh")
+    scad_object = bpy.data.objects.new("SCAD object", mesh)
+
+    # add object to SCAD collection
+    scad_collection = bpy.data.collections.get("SCAD")
+    if scad_collection is None:
+        scad_collection = bpy.data.collections.new("SCAD")
+        bpy.context.scene.collection.children.link(scad_collection)
+    scad_collection.color_tag = "COLOR_03"
+    scad_collection.objects.link(scad_object)
+
     # create new geometry node group with no input node and one output node
     group = bpy.data.node_groups.new("Geometry Nodes", 'GeometryNodeTree')
     group.outputs.new('NodeSocketGeometry', "Geometry")
@@ -347,44 +354,39 @@ def main(context):
     output_node.is_active_output = True
     output_node.select = False
 
-    # add geometry node modifier to object
-    obj = context.active_object
-    # mesh = bpy.data.meshes.new("mesh")
-    # obj = bpy.data.objects.new(mesh.name, mesh)
-    mod = obj.modifiers.new("GeometryNodes", 'NODES')
+    # add modifier to object
+    mod = scad_object.modifiers.new("GeometryNodes", 'NODES')
     mod.node_group = group
-  
-    # load output
+
+    # load scad render output from /tmp/nodes.py and link to output node
     sys.path.append("/tmp")
     import nodes
     importlib.reload(nodes)
     from nodes import get_output_node
 
     output = get_output_node(group, Node)
-
     group.links.new(output_node.inputs[0], getGeomOutput(output))
 
     # TODO: user setting
-    if True:
-        obj.modifier_apply(modifier="GeometryNodes", report=True)
-    # bpy.ops.object.shade_smooth(use_auto_smooth=True)
+    if False:
+        mod.apply(modifier="GeometryNodes", report=True)
+        scad_object.modifier_apply(modifier="GeometryNodes", report=True)
+        scad_object.shade_smooth(use_auto_smooth=True)
 
-    print()
+    bpy.context.view_layer.objects.active = bpy.data.objects['SCAD object']
+
     end_timer = time.time()
-    print("timer:",  end_timer - start_timer)
-    print(" ------------")
-    print()
-
+    print("\ntimer:",  end_timer - start_timer, "\n ------------\n")
 
 
 class Scad3NodesOperator(bpy.types.Operator):
-    """Converts py (parsed .csg file) to geomtry node modifier"""
+    """Converts py (parsed .csg file) to geometry node modifier"""
     bl_idname = "object.scad3nodes"
     bl_label = "scad3nodes"
 
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None
+        return True
 
     def execute(self, context):
         main(context)
@@ -403,8 +405,5 @@ def unregister():
     bpy.utils.unregister_class(Scad3NodesOperator)
     bpy.types.VIEW3D_MT_object.remove(menu_func)
 
-
 if __name__ == "__main__":
     register()
-    # bpy.ops.object.scad3nodes()
-

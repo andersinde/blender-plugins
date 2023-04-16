@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Autoreload script",
-    "version": (0, 4),
-    "blender": (3, 5, 0),
+    "version": (0, 2),
+    "blender": (3, 4, 0),
 }
 
 import bpy
@@ -149,6 +149,12 @@ class MyProperties(PropertyGroup):
             default = True
             )
 
+    scad_create_new_object: BoolProperty(
+            name="SCAD create new object",
+            description="Create new object when importing scad",
+            default = False
+            )
+
     poll_speed_prop: IntProperty(
             name = "Poll speed ms",
             description="A integer property",
@@ -190,6 +196,10 @@ class BPY_PT_external_editor_panel(Panel):
         row = layout.row()
         row.prop(my_props, "scad_prop")
 
+        if my_props.scad_prop:
+            row = layout.row()
+            row.prop(my_props, "scad_create_new_object")
+
 
 def menu_func(self, context):
     self.layout.operator(BPY_OT_external_editor_client.bl_idname, text=BPY_OT_external_editor_client.bl_label)
@@ -211,4 +221,6 @@ if __name__ == '__main__':
     register()
     bpy.ops.wm.bpy_autoreload_script(speed=0.4, mode="start")
     # speed = time_step (float in [0, inf]) – Time Step, Interval in seconds between timer events
+
+
 

@@ -1,7 +1,8 @@
 bl_info = {
     "name": "scad3nodes",
-    "version": (0, 1),
-    "blender": (3, 4, 0),
+    "author": "Anders Inde",
+    "version": (0, 5),
+    "blender": (3, 5, 0),
 }
 
 import bpy

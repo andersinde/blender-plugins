@@ -1,7 +1,8 @@
 bl_info = {
     "name": "Autoreload script",
-    "version": (0, 2),
-    "blender": (3, 4, 0),
+    "author": "Anders Inde",
+    "version": (0, 5),
+    "blender": (3, 5, 0),
 }
 
 import bpy

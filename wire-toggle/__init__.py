@@ -1,5 +1,12 @@
 import bpy
 
+bl_info = {
+    "name": "Toggle wireframe display",
+    "version": (0, 1),
+    "blender": (3, 5, 0),
+}
+
+
 class WireToggleOperator(bpy.types.Operator):
     bl_idname = "object.wire_toggle"
     bl_label = "Toggle wireframe display"

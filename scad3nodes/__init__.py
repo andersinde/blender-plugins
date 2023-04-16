@@ -191,8 +191,11 @@ def Node(name, args, group, inputNodes, code_line):
 
     elif name == 'color':
         color = group.nodes.new('GeometryNodeSetMaterial')
+
         print("anders material:", args['arg_0'])
-        # color.inputs['Material'].default_value = getColorMat(args['arg_0'])
+
+        if 'Material' in color.inputs:
+            color.inputs['Material'].default_value = getColorMat(args['arg_0'])
         if 0 < len(inputNodes):
             group.links.new(color.inputs[0], getGeomOutput(inputNodes[0]))
         node = color

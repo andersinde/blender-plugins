@@ -1,7 +1,7 @@
 bl_info = {
     "name": "scad3nodes",
     "author": "Anders Inde",
-    "version": (0, 5),
+    "version": (0, 6),
     "blender": (3, 5, 0),
 }
 
@@ -91,8 +91,6 @@ def getColorMat(rgba, colorMaterials = {}):
     mat.node_tree.links.new(out, inn)
     return mat
 
-# quick and dirty arg parsing for OpenSCAD operators
-# --------------------------------------------------
 def parseArgs(args):
     args = re.sub(r'\$', '_ss_', args)
     args = re.sub(r'undef', 'None', args)
@@ -219,7 +217,6 @@ def Node(name, args, group, inputNodes, code_line):
         join = group.nodes.new('GeometryNodeJoinGeometry')
         for inputNode in inputNodes:
             group.links.new(join.inputs[0], getGeomOutput(inputNode))
-            # create_new_object(inputNode(0))
         node = join
 
     elif name == 'intersection':
@@ -334,30 +331,56 @@ def Node(name, args, group, inputNodes, code_line):
 
     return node
 
+def create_new_object(name, collection_name):
+    # create new object geometry node modifier to object
+    mesh = bpy.data.meshes.new(name)
+    new_object = bpy.data.objects.new(name, mesh)
+
+    # add object to collection
+    collection = bpy.data.collections.get(collection_name)
+    if collection is None:
+        collection = bpy.data.collections.new(collection_name)
+        bpy.context.scene.collection.children.link(collection)
+    collection.color_tag = "COLOR_03"
+    collection.objects.link(new_object)
+
+    bpy.context.view_layer.objects.active = bpy.data.objects[name]
+    return new_object
 
 def main(context):
     print("\n  ------------ running scad3nodes\n")
+
+    # load scad render output from /tmp/nodes.py
+    sys.path.append("/tmp")
+    import nodes
+    importlib.reload(nodes)
+    # from nodes import get_blender_object_name
+
+
+    # TODO: posibility to read in multiple files, and create/reload(based on specified namee) multiple objects
     start_timer = time.time()
 
-    create_new_object = False # bpy.context.scene.scad_create_new_object
-    scad_object = bpy.context.active_object
-
     my_props = bpy.context.scene.my_props
+    scad_object = bpy.context.active_object
+    previously_selected_object = bpy.context.view_layer.objects.active
+
+    # object_name = get_blender_object_name()
+    object_name = open("/tmp/scad_object_name.txt", "r").read()
+
+    print("object_name = ",  object_name,  "\n ------------\n")
+    print("previously_selected_object = ",  previously_selected_object,  "\n ------------\n")
 
     if my_props.scad_create_new_object:
-        # create new object geometry node modifier to object
-        mesh = bpy.data.meshes.new("SCAD mesh")
-        scad_object = bpy.data.objects.new("SCAD object", mesh)
-
-        # add object to SCAD collection
-        scad_collection = bpy.data.collections.get("SCAD")
-        if scad_collection is None:
-            scad_collection = bpy.data.collections.new("SCAD")
-            bpy.context.scene.collection.children.link(scad_collection)
-        scad_collection.color_tag = "COLOR_03"
-        scad_collection.objects.link(scad_object)
-
+        scad_object = create_new_object('SCAD object', 'SCAD collection')
         bpy.context.view_layer.objects.active = bpy.data.objects['SCAD object']
+
+    elif object_name is not None:
+        if bpy.data.objects.get(object_name) is not None:
+            scad_object = bpy.data.objects.get(object_name)
+            bpy.context.view_layer.objects.active = scad_object
+        else:
+            scad_object = create_new_object(object_name, 'SCAD collection')
+
 
     # create new geometry node group with no input node and one output node
     group = bpy.data.node_groups.new("Geometry Nodes", 'GeometryNodeTree')
@@ -370,24 +393,20 @@ def main(context):
     mod = scad_object.modifiers.new("GeometryNodes", 'NODES')
     mod.node_group = group
 
-    # load scad render output from /tmp/nodes.py and link to output node
-    sys.path.append("/tmp")
-    import nodes
-    importlib.reload(nodes)
     from nodes import get_output_node
 
     output = get_output_node(group, Node)
     group.links.new(output_node.inputs[0], getGeomOutput(output))
 
-    # TODO: user setting
-    if False:
+    if my_props.scad_apply_geometry_nodes:
         mod.apply(modifier="GeometryNodes", report=True)
         scad_object.modifier_apply(modifier="GeometryNodes", report=True)
         scad_object.shade_smooth(use_auto_smooth=True)
 
+    bpy.context.view_layer.objects.active = previously_selected_object
 
     end_timer = time.time()
-    print("\ntimer:",  end_timer - start_timer, "\n ------------\n")
+    print("\nFinished SCAD in:",  end_timer - start_timer, "\n ------------\n")
 
 
 class Scad3NodesOperator(bpy.types.Operator):

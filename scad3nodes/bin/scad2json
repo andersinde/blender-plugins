@@ -1,18 +1,14 @@
 #!/bin/sh
 file=$1
-# file=${file%.*}
-# file=${file##*/}
 
 echo "{$file}"
-cp $1 /tmp/tmp.scad
-
-OpenSCAD /tmp/tmp.scad -o /tmp/tmp.csg
+OpenSCAD /tmp/blender.scad -o /tmp/blender.csg
 # cat /tmp/tmp.csg
 
-parse < /tmp/tmp.csg > /tmp/nodes.py
+parse < /tmp/blender.csg > /tmp/nodes.py
 touch ${file}.name
  
 # cat /tmp/nodes.py
 
-rm /tmp/tmp.scad /tmp/tmp.csg
+rm /tmp/blender.scad /tmp/blender.csg
 echo "/tmp/nodes.py" > /tmp/blender_tmp.io

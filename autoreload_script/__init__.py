@@ -155,6 +155,11 @@ class MyProperties(PropertyGroup):
             description="Create new object when importing scad",
             default = False
             )
+    scad_apply_geometry_nodes: BoolProperty(
+            name="SCAD apply modifier",
+            description="Apply the geometry nodes modifier",
+            default = False
+            )
 
     poll_speed_prop: IntProperty(
             name = "Poll speed ms",
@@ -200,6 +205,9 @@ class BPY_PT_external_editor_panel(Panel):
         if my_props.scad_prop:
             row = layout.row()
             row.prop(my_props, "scad_create_new_object")
+
+            row = layout.row()
+            row.prop(my_props, "scad_apply_geometry_nodes")
 
 
 def menu_func(self, context):

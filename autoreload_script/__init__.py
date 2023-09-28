@@ -150,11 +150,6 @@ class MyProperties(PropertyGroup):
             default = True
             )
 
-    scad_create_new_object: BoolProperty(
-            name="SCAD create new object",
-            description="Create new object when importing scad",
-            default = False
-            )
     scad_apply_geometry_nodes: BoolProperty(
             name="SCAD apply modifier",
             description="Apply the geometry nodes modifier",
@@ -203,9 +198,6 @@ class BPY_PT_external_editor_panel(Panel):
         row.prop(my_props, "scad_prop")
 
         if my_props.scad_prop:
-            row = layout.row()
-            row.prop(my_props, "scad_create_new_object")
-
             row = layout.row()
             row.prop(my_props, "scad_apply_geometry_nodes")
 

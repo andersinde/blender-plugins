@@ -309,8 +309,8 @@ static uint64_t emit(
     for(auto &id:ids)
       printf("n_%06d, ", (int)id);
 
-    printf("], code_line=%d)\n", op->start_line);
-    //printf("]);\n");
+    /* printf("], code_line=%d)\n", op->start_line); */
+    printf("])\n");
   }
 
   // return the node's unique id
@@ -757,7 +757,7 @@ int main() {
   top = remove_dead_code(top);
   top = concat(top);
   top = compress(map, top);
-  printf("def get_output_node(group, Node):\n");
+
   printf("\treturn n_%06d\n", (int)emit(top));
   return 0;
 }

@@ -2,7 +2,7 @@ bl_info = {
     "name": "scad3nodes",
     "author": "Anders Inde",
     "version": (1, 0),
-    "blender": (3, 6, 0),
+    "blender": (4, 0, 0),
 }
 
 import bpy
@@ -371,7 +371,8 @@ def main(context):
 
         # create new geometry node group with no input node and one output node
         group = bpy.data.node_groups.new("Geometry Nodes", 'GeometryNodeTree')
-        group.outputs.new('NodeSocketGeometry', "Geometry")
+        group.interface.new_socket("output socket", in_out='OUTPUT', socket_type='NodeSocketGeometry', parent=None)
+
         output_node = group.nodes.new('NodeGroupOutput')
         output_node.is_active_output = True
         output_node.select = False
